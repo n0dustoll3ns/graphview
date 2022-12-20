@@ -4,6 +4,8 @@ const double ARROW_DEGREES = 0.5;
 const double ARROW_LENGTH = 10;
 
 class ArrowEdgeRenderer extends EdgeRenderer {
+  ArrowEdgeRenderer({bool? endAtLeftBorder}) : endAtLeftBorder = endAtLeftBorder ?? false;
+  bool endAtLeftBorder;
   var trianglePath = Path();
 
   @override
@@ -17,11 +19,13 @@ class ArrowEdgeRenderer extends EdgeRenderer {
       var destination = edge.destination;
 
       var sourceOffset = source.position;
+      if (endAtLeftBorder) sourceOffset = sourceOffset.translate(source.width / 2, 0);
 
       var x1 = sourceOffset.dx;
       var y1 = sourceOffset.dy;
 
       var destinationOffset = destination.position;
+      if (endAtLeftBorder) sourceOffset = sourceOffset.translate(-source.width / 2, 0);
 
       var x2 = destinationOffset.dx;
       var y2 = destinationOffset.dy;
@@ -40,11 +44,11 @@ class ArrowEdgeRenderer extends EdgeRenderer {
           ..style = PaintingStyle.fill;
       }
 
-      var triangleCentroid = drawTriangle(
-          canvas, edgeTrianglePaint ?? trianglePaint, clippedLine[0], clippedLine[1], clippedLine[2], clippedLine[3]);
+      var triangleCentroid = drawTriangle(canvas, edgeTrianglePaint ?? trianglePaint, clippedLine[0],
+          clippedLine[1], clippedLine[2], clippedLine[3]);
 
-      canvas.drawLine(Offset(clippedLine[0], clippedLine[1]), Offset(triangleCentroid[0], triangleCentroid[1]),
-          edge.paint ?? paint);
+      canvas.drawLine(Offset(clippedLine[0], clippedLine[1]),
+          Offset(triangleCentroid[0], triangleCentroid[1]), edge.paint ?? paint);
     });
   }
 
@@ -72,6 +76,11 @@ class ArrowEdgeRenderer extends EdgeRenderer {
     var resultLine = List.filled(4, 0.0);
     resultLine[0] = startX;
     resultLine[1] = startY;
+    if (endAtLeftBorder) {
+      resultLine[2] = stopX;
+      resultLine[3] = stopY;
+      return resultLine;
+    }
 
     var slope = (startY - stopY) / (startX - stopX);
     var halfHeight = destination.height / 2;
